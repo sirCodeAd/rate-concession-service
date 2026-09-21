@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Mortgage Pricing Exception Service</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.1rem; margin-top: 2rem; }
+    section { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+    label { display: block; margin: 0.5rem 0 0.2rem; font-size: 0.9rem; font-weight: 600; }
+    input, select, textarea, button { font-size: 0.95rem; padding: 0.4rem; }
+    input, select, textarea { width: 100%; box-sizing: border-box; }
+    button { cursor: pointer; margin-top: 0.75rem; padding: 0.5rem 1rem; }
+    table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+    th, td { border: 1px solid #ddd; padding: 0.4rem; text-align: left; font-size: 0.85rem; }
+    tr:hover { background: #f7f7f7; cursor: pointer; }
+    .status-PENDING { color: #a06a00; }
+    .status-APPROVED { color: #1a7a1a; }
+    .status-DECLINED { color: #b00020; }
+    .status-WITHDRAWN { color: #666; }
+    .error { color: #b00020; white-space: pre-wrap; }
+    .muted { color: #777; font-size: 0.85rem; }
+    #detail pre { background: #f5f5f5; padding: 0.75rem; overflow-x: auto; }
+    .actions button { margin-right: 0.5rem; width: auto; }
+  </style>
+</head>
+<body>
+  <h1>Mortgage Pricing Exception Service &mdash; demo UI</h1>
+  <p class="muted">
+    This is a bonus, functional-not-polished UI for the take-home exercise. Authentication is
+    simulated: pick a user below and every request will carry the matching
+    <code>X-User-Id</code> / <code>X-User-Role</code> headers.
+  </p>
+
+  <section>
+    <h2>Current user</h2>
+    <label for="userSelect">Acting as</label>
+    <select id="userSelect"></select>
+  </section>
+
+  <section>
+    <h2>Create a pricing exception request</h2>
+    <label for="createAppId">Application ID</label>
+    <input id="createAppId" list="appIdList" placeholder="app-1001" />
+    <datalist id="appIdList"></datalist>
+    <label for="createDiscount">Requested discount (bps, 1-500)</label>
+    <input id="createDiscount" type="number" min="1" max="500" value="25" />
+    <label for="createReason">Reason</label>
+    <textarea id="createReason" rows="2" placeholder="Why should this discount be granted?"></textarea>
+    <button id="createBtn">Create request</button>
+    <div id="createResult" class="error"></div>
+  </section>
+
+  <section>
+    <h2>Requests</h2>
+    <label for="filterAppId">Filter by application ID (optional)</label>
+    <input id="filterAppId" placeholder="app-1001" />
+    <label for="filterStatus">Filter by status (optional)</label>
+    <select id="filterStatus">
+      <option value="">(any)</option>
+      <option value="PENDING">PENDING</option>
+      <option value="APPROVED">APPROVED</option>
+      <option value="DECLINED">DECLINED</option>
+      <option value="WITHDRAWN">WITHDRAWN</option>
+    </select>
+    <button id="listBtn">Refresh list</button>
+    <table id="requestsTable">
+      <thead>
+        <tr><th>ID</th><th>Application</th><th>Discount</th><th>Status</th><th>Created by</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="detailSection" style="display:none">
+    <h2>Request detail</h2>
+    <div id="detail"></div>
+    <div class="actions" id="detailActions"></div>
+    <h3>History</h3>
+    <table id="historyTable">
+      <thead><tr><th>Event</th><th>Actor</th><th>Timestamp</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Approved discount lookup</h2>
+    <label for="discountAppId">Application ID</label>
+    <input id="discountAppId" placeholder="app-1001" />
+    <button id="discountBtn">Look up</button>
+    <pre id="discountResult"></pre>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

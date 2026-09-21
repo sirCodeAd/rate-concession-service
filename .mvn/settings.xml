@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Project-local Maven settings.
+
+  The machine-wide ~/.m2/settings.xml on some developer machines mirrors all
+  repositories to a private corporate Nexus instance. This project must build
+  with only public infrastructure (Maven Central), so we ship a settings file
+  that ignores any such mirror and is wired in automatically via
+  .mvn/maven.config (-s .mvn/settings.xml).
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <mirrors>
+        <mirror>
+            <id>central-only</id>
+            <name>Force Maven Central, bypass any corporate mirror</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <mirrorOf>*</mirrorOf>
+        </mirror>
+    </mirrors>
+</settings>

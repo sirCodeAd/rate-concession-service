@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: rate-concession-service
+  datasource:
+    url: jdbc:h2:file:./data/rate-concession
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
