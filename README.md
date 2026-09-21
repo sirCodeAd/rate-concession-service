@@ -10,6 +10,8 @@ This was built as a take-home-style exercise. This README covers what the proble
 run/try it; deeper design rationale, the full API reference, and process notes live in
 [Further documentation](#further-documentation) below.
 
+**Time spent:** approximately 5 hours.
+
 ## Problem summary
 
 - RMs create pricing exception requests against an existing mortgage application, with a

@@ -52,8 +52,9 @@ running app; Flyway migrations live in `src/main/resources/db/migration`:
 - `V1__init_schema.sql` — all tables, foreign keys, and indexes on
   `pricing_exception_request(application_id)` and `(status)`. Also defines a computed column,
   `pending_application_id` (non-null only when `status = 'PENDING'`), with a unique index on it —
-  H2 (like most SQL databases) doesn't support `WHERE`-clause partial unique indexes directly, so
-  this is the standard workaround: unique indexes ignore `NULL`s, so terminal-status rows are
+  H2 doesn't support `WHERE`-clause partial unique indexes directly (unlike, say, PostgreSQL,
+  which does), so this is the standard workaround for databases without that feature: unique
+  indexes ignore `NULL`s, so terminal-status rows are
   unconstrained while at most one `PENDING` row per `application_id` is allowed. This is the
   database-level backstop for the "one open request per application" rule (see
   [DECISIONS.md](./DECISIONS.md)); the service layer also does a friendly pre-check so the common
