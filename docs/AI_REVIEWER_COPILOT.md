@@ -159,20 +159,16 @@ triggers can produce at most one row. The UI simply shows "findings pending" unt
 
 ## 6. Risks (named honestly)
 
-- **Regulatory risk (EU): GDPR Article 22 and the EU AI Act, not just "fair lending."** Under GDPR
-  Article 22, individuals have a right not to be subject to a decision based solely on automated
-  processing where it produces legal or similarly significant effects — and the CJEU's SCHUFA
-  ruling found that automated credit scoring itself falls under this rule *where it plays a
-  determining role in the lender's decision*, not just the final yes/no. Separately, the EU AI Act
-  classifies creditworthiness-assessment systems as **high-risk** (Annex III), bringing its own
-  obligations: human oversight, risk management, logging, and conformity assessment. Whether a
-  pricing-exception helper like this one counts as "creditworthiness assessment" under the AI Act
-  (as opposed to a narrower pricing-only tool) isn't obvious either way and would need a real legal
-  assessment before this is built, not an assumption made here. (This is the same underlying
-  concern discussed in the US under "fair-lending"/"disparate-impact" terms, if that framing is
-  more familiar.) Both regimes point the same direction as this proposal's core design —
-  meaningful human decision-making, not an automated output a reviewer just rubber-stamps — which
-  is the main reason §2's architecture is non-negotiable, not a nice-to-have.
+- **Regulatory risk.** Lending decisions about individuals are regulated in the EU. Data
+  protection law restricts decisions made solely by automated systems when they significantly
+  affect a person, and courts have treated a credit score that a lender relies on heavily as
+  such a decision in itself. The EU AI Act separately treats AI used to assess people's
+  creditworthiness as high-risk, which brings requirements such as human oversight, logging, and
+  risk management. Whether this pricing-exception helper falls under those rules would need a
+  proper legal assessment before it's built. This proposal doesn't depend on the answer: it's
+  designed so that a named reviewer makes every decision, every AI output is logged and
+  reproducible, and nothing is shown to reviewers until it has been validated in shadow mode —
+  which is what a regulator would expect either way.
 - **Extraction errors**: the LLM could misread the `reason` text — missing a real claim, inventing
   one that isn't there, or wrongly marking something as corroborated by the application data.
   Because the rule engine's `policyEvaluation` trusts whatever claims it's given, a bad extraction
