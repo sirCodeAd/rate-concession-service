@@ -67,14 +67,6 @@ running app; Flyway migrations live in `src/main/resources/db/migration`:
 `spring.jpa.hibernate.ddl-auto=validate` — the schema is owned entirely by Flyway; Hibernate only
 validates the mapping matches it.
 
-> **Deviation from the brief:** the brief's example URL includes `;AUTO_SERVER=TRUE`. In this
-> development sandbox, H2's auto-server mode attempted to open a TCP connection to a non-loopback
-> address and timed out (a sandbox networking restriction), so the shipped config omits it. Add it
-> back (`jdbc:h2:file:./data/rate-concession;AUTO_SERVER=TRUE`) if you need multiple local
-> processes (e.g. the app plus a separate H2 console client) to open the same file concurrently;
-> for a single running app instance (as here, with the H2 console served in-process) it isn't
-> required.
-
 The H2 console is enabled at `/h2-console` for local exploration only — **disable it before any
 production deployment** (`spring.h2.console.enabled=false`), since it exposes a SQL query UI over
 HTTP.

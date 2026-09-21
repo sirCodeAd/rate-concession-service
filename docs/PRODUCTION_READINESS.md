@@ -25,3 +25,8 @@ What would change before this went anywhere near production:
 - **API versioning** (e.g. `/api/v1/...`) so the contract can evolve without breaking consumers.
 - **Idempotency record retention**: currently kept forever; production should expire old
   `IdempotencyRecord` rows after a bounded retry window.
+- **Notifying the mortgage process of a changed decision**: `approved-discount` is pull-only —
+  if a decision changes after it was last read, the mortgage process won't know until it polls
+  again. Fix: publish a domain event (e.g. Kafka) on change, via the **transactional outbox
+  pattern** (write the event in the same DB transaction as the decision) so it's never lost or
+  duplicated relative to what was actually committed.
