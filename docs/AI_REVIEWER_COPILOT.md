@@ -218,11 +218,9 @@ all, so `extractedClaims` stays empty and only the deterministic `policyEvaluati
 That alone proves the integration seam, the data model, and the UI panel end-to-end, entirely
 offline, before any real model is involved.
 
-## 8. A smaller, complementary idea: AI in the SDLC
+## 8. A smaller, complementary idea: agents in the SDLC
 
-The bonus allows enhancing "the solution **or** the SDLC around it." The copilot above is the
-product-side idea; this is the SDLC-side one, and it is arguably the better first investment,
-because it needs no customer data, touches no regulated decision, and can run entirely offline.
+This is the SDLC-side one, it needs no customer data, touches no regulated decision, and can run entirely offline.
 
 **The problem**: agents write code and tests quickly, but agent-written tests can look thorough
 while catching nothing — asserting a status code but not the side effect, or testing *how* the
@@ -261,6 +259,3 @@ rules themselves are right — a wrong invariant gets faithfully tested into pla
 so 100% is not a sensible target. Agents can overfit tests to the current implementation. And
 PIT is slow against Spring Boot integration tests, so it is best pointed at the service layer
 and faster unit tests first.
-
-**Status.** Not implemented in this exercise; it is the first thing I would add next, since every
-piece (PIT, JUnit, a markdown file) is free and runs locally.
