@@ -9,7 +9,7 @@ data/
 
 # Internal take-home brief - kept locally, not published to the repo
 AI_IMPLEMENTATION_PROMPT.md
-docs/
+docs/*.pdf
 
 ### STS ###
 .apt_generated
