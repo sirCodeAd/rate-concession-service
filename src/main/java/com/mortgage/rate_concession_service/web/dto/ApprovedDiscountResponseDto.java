@@ -1,7 +1,5 @@
 package com.mortgage.rate_concession_service.web.dto;
 
-import com.mortgage.rate_concession_service.domain.PricingExceptionRequest;
-
 import java.time.Instant;
 
 /** Response for {@code GET /api/applications/{applicationId}/approved-discount}. */

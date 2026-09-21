@@ -15,7 +15,6 @@ import com.mortgage.rate_concession_service.web.dto.HistoryEventDto;
 import com.mortgage.rate_concession_service.web.dto.RequestResponseDto;
 import com.mortgage.rate_concession_service.web.dto.WithdrawRequestDto;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

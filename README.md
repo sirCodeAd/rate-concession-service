@@ -1,6 +1,6 @@
 # Mortgage Pricing Exception Service
 
-A small Spring Boot (Java 21) HTTP API that manages **mortgage pricing exception requests**:
+A small Spring Boot HTTP API that manages **mortgage pricing exception requests**:
 relationship managers (RMs) request a discount (in basis points) off the standard rate on a
 mortgage application, reviewers approve or decline the request, and a downstream mortgage
 application process can look up the currently-approved discount for an application. Every state
@@ -11,6 +11,11 @@ run/try it; deeper design rationale, the full API reference, and process notes l
 [Further documentation](#further-documentation) below.
 
 **Time spent:** approximately 5 hours.
+
+## Requirements
+
+- Java 21
+- Spring Boot 4
 
 ## Problem summary
 
