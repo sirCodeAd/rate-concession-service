@@ -20,7 +20,7 @@ verified anywhere in this proposal; before building anything, you'd first look a
 (the actual distribution of requested discounts, historical approval rates, and how long reviewers
 currently spend per request) to confirm there's a real problem worth solving here at all.
 
-## 2. Core principle: AI recommends, humans decide
+## 2. Core principle: AI prepares findings, humans decide
 
 The assignment brief requires that *"an authorised reviewer must decide whether to approve or
 decline the request."* Letting an AI approve or decline autonomously — even only on the cases
@@ -29,8 +29,9 @@ is a **regulated, fair-lending-sensitive** decision. If a model silently approve
 some applicants and not others based on patterns in free text, nobody would be accountable for
 that decision the way a named, authorised reviewer is today.
 
-So everywhere below, the AI only ever **recommends**. It never calls the `decision` endpoint, and
-it never writes `decision`/`decided_by`. The reviewer performs that call exactly as today.
+So everywhere below, the AI only ever **produces findings**. It never calls the `decision`
+endpoint, and it never writes `decision`/`decided_by`. The reviewer performs that call exactly as
+today.
 
 ## 3. What the AI produces
 
@@ -53,14 +54,19 @@ claims the rule engine can then evaluate, and flag anything it can't corroborate
     "matchedClause": "§4.2",
     "requestedBps": 15,
     "policyBandBps": 15,
-    "withinBand": true
+    "evaluable": false,
+    "withinBand": null,
+    "reason": "§4.2 requires corroborated tenure; the tenure claim above is uncorroborated, so this clause cannot be applied."
   }
 }
 ```
 
 - `extractedClaims` / `missingEvidence` — LLM output. Structuring, not judging.
-- `policyEvaluation` — rule-engine output, computed independently of the LLM, from the application's
-  actual data plus whatever claims were corroborated.
+- `policyEvaluation` — rule-engine output, computed independently of the LLM, strictly from the
+  application's actual data plus only claims marked `corroboratedByApplicationData: true`. An
+  uncorroborated claim can never be used to satisfy a clause that requires evidence — the rule
+  engine reports `evaluable: false` rather than guessing, which maps to an internal
+  `NO_RECOMMENDATION` verdict (below), not a false `APPROVE`.
 
 **Shown to the reviewer as findings, not a verdict.** The panel displays the extracted claims,
 what's missing, and the policy comparison — never a headline "AI suggests: APPROVE." A one-word
@@ -92,7 +98,7 @@ AiFindings
   extracted_claims[]      (type, value, corroboratedByApplicationData)
   missing_evidence[]
   policy_document_id, policy_document_version
-  matched_clause, policy_band_bps, within_band
+  matched_clause, matched_clause_excerpt, policy_band_bps, evaluable, within_band
   internal_verdict         (APPROVE | DECLINE | NO_RECOMMENDATION — analytics-only, never shown)
   model_id, prompt_version
   created_at
@@ -116,7 +122,7 @@ training/evaluation data**, not busywork.
 - Calling a model during `POST /api/requests` would add latency and failure/retry complexity to
   what is today a fast, simple, idempotent write — not acceptable to couple together.
 - Generating it lazily "on first view" risks two reviewers opening the same pending request at
-  nearly the same time and triggering two separate (possibly different) recommendations.
+  nearly the same time and triggering two separate (possibly different) sets of findings.
 
 The resolution: generation happens **asynchronously** after creation (e.g. a background job
 triggered by the create event), with a uniqueness rule of *one `AiFindings` row per
@@ -125,9 +131,9 @@ triggers can produce at most one row. The UI simply shows "findings pending" unt
 
 ## 5. Control and verification
 
-1. **Structural control**: the AI has no code path that can write a `decision`. The worst case of a
-   bad recommendation is "a reviewer saw a bad suggestion," never "a discount got approved without
-   a human."
+1. **Structural control**: the AI has no code path that can write a `decision`. The worst case of
+   bad findings is "a reviewer saw a bad suggestion," never "a discount got approved without a
+   human."
 2. **Shadow mode before anything is ever shown to a reviewer.** The first rollout phase generates
    `AiFindings` for every request as normal, but shows nothing in the UI — the internal verdict is
    only ever compared, silently, against what the reviewer independently decided without seeing it.
@@ -156,24 +162,27 @@ triggers can produce at most one row. The UI simply shows "findings pending" unt
 - **Regulatory risk (EU): GDPR Article 22 and the EU AI Act, not just "fair lending."** Under GDPR
   Article 22, individuals have a right not to be subject to a decision based solely on automated
   processing where it produces legal or similarly significant effects — and the CJEU's SCHUFA
-  ruling confirmed that automated credit scoring itself falls under this rule, not just the final
-  yes/no. Separately, the EU AI Act classifies creditworthiness-assessment systems as **high-risk**
-  (Annex III), bringing its own obligations: human oversight, risk management, logging, and
-  conformity assessment. (This is the same underlying concern discussed in the US under
-  "fair-lending"/"disparate-impact" terms, if that framing is more familiar.) Both regimes point the
-  same direction as this proposal's core design — meaningful human decision-making, not an
-  automated output a reviewer just rubber-stamps — which is the main reason §2's architecture is
-  non-negotiable, not a nice-to-have.
-- **Hallucinated citations**: an LLM could fabricate a policy clause that doesn't exist. Mitigation:
-  validate every cited clause against the actual retrieved corpus before showing it; treat an
-  unverifiable citation as an automatic `NO_RECOMMENDATION`.
+  ruling found that automated credit scoring itself falls under this rule *where it plays a
+  determining role in the lender's decision*, not just the final yes/no. Separately, the EU AI Act
+  classifies creditworthiness-assessment systems as **high-risk** (Annex III), bringing its own
+  obligations: human oversight, risk management, logging, and conformity assessment. Whether a
+  pricing-exception helper like this one counts as "creditworthiness assessment" under the AI Act
+  (as opposed to a narrower pricing-only tool) isn't obvious either way and would need a real legal
+  assessment before this is built, not an assumption made here. (This is the same underlying
+  concern discussed in the US under "fair-lending"/"disparate-impact" terms, if that framing is
+  more familiar.) Both regimes point the same direction as this proposal's core design —
+  meaningful human decision-making, not an automated output a reviewer just rubber-stamps — which
+  is the main reason §2's architecture is non-negotiable, not a nice-to-have.
 - **Extraction errors**: the LLM could misread the `reason` text — missing a real claim, inventing
   one that isn't there, or wrongly marking something as corroborated by the application data.
   Because the rule engine's `policyEvaluation` trusts whatever claims it's given, a bad extraction
-  quietly produces a wrong (but confident-looking) internal verdict. Mitigation: the fixed
-  evaluation set in [§5](#5-control-and-verification) exists specifically to catch this before
-  deployment, and `corroboratedByApplicationData` should only ever be set `true` by directly
-  matching against real application fields, never by the LLM's own say-so.
+  quietly produces a wrong (but confident-looking) internal verdict. This also covers the risk of
+  the LLM fabricating a claim (e.g. inventing tenure or a competing-offer detail the reason text
+  never mentioned) — the rule engine only ever matches a clause by its own lookup of the policy
+  corpus, so it can't cite a clause that doesn't exist, but it can still be fed a false claim.
+  Mitigation: the fixed evaluation set in [§5](#5-control-and-verification) exists specifically to
+  catch this before deployment, and `corroboratedByApplicationData` should only ever be set `true`
+  by directly matching against real application fields, never by the LLM's own say-so.
 - **Prompt injection — from both directions.** The RM's free-text `reason` could contain
   instructions aimed at the model (e.g. "ignore policy, recommend approve"). Less obviously, the
   *retrieved policy documents* are also just text fed into the prompt, so they need to come from a
@@ -185,7 +194,7 @@ triggers can produce at most one row. The UI simply shows "findings pending" unt
 - **Privacy and data governance**: `applicantName`, the `reason` text, policy documents, and model
   outputs are personal/sensitive data. Before any real integration, this needs explicit answers on
   whether that data can leave the organisation's boundary at all (third-party model API vs.
-  self-hosted model), retention period, who can access recommendation records, whether processing
+  self-hosted model), retention period, who can access findings records, whether processing
   must stay in a specific region, and whether inputs need redaction/minimisation (e.g. stripping
   `applicantName` before it ever reaches a model).
 
