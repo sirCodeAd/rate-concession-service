@@ -12,7 +12,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Append-only audit trail row; one is written per state transition of a request (including creation). */
 @Entity
 @Table(name = "request_history_event")
 public class RequestHistoryEvent {

@@ -5,7 +5,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.springframework.stereotype.Component;
 
-/** SHA-256 hashing utility used to fingerprint normalized idempotent request bodies. */
 @Component
 public class HashUtil {
 

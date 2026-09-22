@@ -200,11 +200,38 @@ async function lookupApprovedDiscount() {
   }
 }
 
+async function checkReason() {
+  const resultEl = document.getElementById("checkReasonResult");
+  resultEl.textContent = "Checking...";
+  const applicationId = document.getElementById("createAppId").value.trim();
+  const requestedDiscountBps = parseInt(document.getElementById("createDiscount").value, 10);
+  const reason = document.getElementById("createReason").value.trim();
+
+  try {
+    const result = await api("/api/requests/reason-feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ applicationId, requestedDiscountBps, reason }),
+    });
+    if (result.feedback.length === 0) {
+      resultEl.textContent = "No feedback - looks complete.";
+    } else {
+      resultEl.innerHTML =
+        `<strong>Feedback (mock, not AI - see docs/AI_REQUEST_QUALITY_ASSISTANT.md):</strong><ul>` +
+        result.feedback.map((f) => `<li>${f.message}</li>`).join("") +
+        "</ul>";
+    }
+  } catch (e) {
+    resultEl.textContent = `Error: ${e.message}`;
+  }
+}
+
 function init() {
   populateUserSelect();
   populateAppIdList();
   listRequests();
   document.getElementById("createBtn").addEventListener("click", createRequest);
+  document.getElementById("checkReasonBtn").addEventListener("click", checkReason);
   document.getElementById("listBtn").addEventListener("click", listRequests);
   document.getElementById("discountBtn").addEventListener("click", lookupApprovedDiscount);
 

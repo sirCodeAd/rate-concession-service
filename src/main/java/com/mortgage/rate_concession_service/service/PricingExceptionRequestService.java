@@ -26,12 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Core use cases for pricing exception requests: creation (with idempotency), review decisions,
- * withdrawal, and read paths. Decision/withdrawal transitions rely on a conditional atomic update
- * (see {@link PricingExceptionRequestRepository#transitionIfPending}) so that concurrent attempts
- * on the same request can only ever have one winner.
- */
 @Service
 public class PricingExceptionRequestService {
 
@@ -63,12 +57,6 @@ public class PricingExceptionRequestService {
     public record IdempotentResult(int httpStatus, String responseBodyJson) {
     }
 
-    /**
-     * Handles create-with-idempotency. Not itself transactional: it orchestrates a fast-path
-     * lookup, a REQUIRES_NEW transactional create, and a fallback re-read if two truly concurrent
-     * requests race on the same brand-new key (detected via the idempotency_key PK/unique
-     * constraint).
-     */
     public IdempotentResult createRequest(String idempotencyKey, CreateRequestDto dto, AppUser currentUser) {
         String normalizedBody = normalize(dto);
         String hash = hashUtil.sha256Hex(normalizedBody);
@@ -134,7 +122,7 @@ public class PricingExceptionRequestService {
 
     @Transactional
     public PricingExceptionRequest decide(UUID id, DecisionRequestDto dto, AppUser reviewer) {
-        // Ensure the request exists at all, to distinguish 404 from 409.
+
         getOrThrow(id);
 
         RequestStatus newStatus = dto.decision() == DecisionRequestDto.Decision.APPROVE
@@ -155,10 +143,7 @@ public class PricingExceptionRequestService {
 
     @Transactional
     public PricingExceptionRequest withdraw(UUID id, String reason, AppUser currentUser) {
-        // Any authenticated relationship manager may withdraw a pending request, not only its
-        // creator - mirroring how any REVIEWER (not a specifically assigned one) may decide on a
-        // request. Continuity (e.g. covering for an absent colleague) outweighs the narrower
-        // ownership check; the actor is still recorded in the history event for accountability.
+
         getOrThrow(id);
 
         Instant decidedAt = Instant.now();

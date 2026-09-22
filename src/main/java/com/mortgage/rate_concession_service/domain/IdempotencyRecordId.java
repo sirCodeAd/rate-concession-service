@@ -3,11 +3,6 @@ package com.mortgage.rate_concession_service.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Composite primary key for {@link IdempotencyRecord}: idempotency is scoped per caller
- * (managerId), so the same key value may be reused independently by different relationship
- * managers without colliding.
- */
 public class IdempotencyRecordId implements Serializable {
 
     private String managerId;

@@ -90,7 +90,21 @@ Full request/response bodies, validation rules, and a curl walkthrough are in
 | `GET /api/requests?applicationId=&status=` | any authenticated user | List/filter, newest-created first. |
 | `POST /api/requests/{id}/decision` | reviewer | Approve or decline a pending request. |
 | `POST /api/requests/{id}/withdraw` | any RM | Withdraw a pending request. |
+| `POST /api/requests/reason-feedback` | RM | Optional, read-only mock feedback on a draft reason before submitting (never writes anything). See below and [docs/AI_REQUEST_QUALITY_ASSISTANT.md](docs/AI_REQUEST_QUALITY_ASSISTANT.md). |
 | `GET /api/applications/{applicationId}/approved-discount` | any authenticated user | The currently-approved discount, if any, for the mortgage process to consume. |
+
+### Request Quality Assistant (mock, optional)
+
+Before submitting, an RM can get short, deterministic feedback on a draft reason/discount. This
+is a mocked stand-in for an LLM (see [docs/AI_REQUEST_QUALITY_ASSISTANT.md](docs/AI_REQUEST_QUALITY_ASSISTANT.md))
+— it never writes, decides, or blocks anything, and can be turned off with
+`ai.reason-feedback.enabled=false` (returns `404` when disabled).
+
+```bash
+curl -s -X POST http://localhost:8080/api/requests/reason-feedback \
+  -H "X-User-Id: rm-1" -H "X-User-Role: RELATIONSHIP_MANAGER" -H "Content-Type: application/json" \
+  -d '{"applicationId":"app-1001","requestedDiscountBps":150,"reason":"good customer"}'
+```
 
 ## Further documentation
 
@@ -101,4 +115,4 @@ Full request/response bodies, validation rules, and a curl walkthrough are in
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Domain model, state machine, concurrency handling, simulated auth, storage/migrations, diagrams, and source layout. |
 | [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) | What would change before this went anywhere near production. |
 | [docs/AI_DEVELOPMENT.md](docs/AI_DEVELOPMENT.md) | How AI-assisted/agentic development was actually used and validated while building this. |
-| [docs/AI_REVIEWER_COPILOT.md](docs/AI_REVIEWER_COPILOT.md) | Bonus: a grounded proposal for how an AI agent could assist (never replace) a human reviewer, with control/verification and named risks. |
+| [docs/AI_REQUEST_QUALITY_ASSISTANT.md](docs/AI_REQUEST_QUALITY_ASSISTANT.md) | Bonus: a mocked "Request Quality Assistant" that gives RMs pre-submission feedback on a draft reason, plus the proposal for a real version, control/verification, and risks. |

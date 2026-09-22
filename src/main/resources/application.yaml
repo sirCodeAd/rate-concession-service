@@ -20,3 +20,8 @@ spring:
 
 server:
   port: 8080
+
+ai:
+  reason-feedback:
+    # Toggles the mock "Request Quality Assistant" (POST /api/requests/reason-feedback).
+    enabled: true

@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A mortgage application against which pricing exception requests can be raised. */
 @Entity
 @Table(name = "mortgage_application")
 public class MortgageApplication {

@@ -11,12 +11,6 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * An immutable-from-creation request for a discount (in basis points) off the standard rate on a
- * mortgage application. Deliberately has no update/edit endpoint: once created the discount and
- * reason can never change. If an RM wants different terms they must withdraw and create a new
- * request, ensuring any approval always applies to the exact request that was reviewed.
- */
 @Entity
 @Table(name = "pricing_exception_request")
 public class PricingExceptionRequest {

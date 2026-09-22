@@ -6,7 +6,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A simulated authenticated principal, seeded via Flyway migrations (see V2__seed_data.sql). */
 @Entity
 @Table(name = "app_user")
 public class AppUser {

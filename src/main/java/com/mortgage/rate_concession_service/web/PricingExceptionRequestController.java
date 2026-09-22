@@ -7,11 +7,15 @@ import com.mortgage.rate_concession_service.domain.RequestStatus;
 import com.mortgage.rate_concession_service.domain.UserRole;
 import com.mortgage.rate_concession_service.exception.BadRequestException;
 import com.mortgage.rate_concession_service.exception.ForbiddenException;
+import com.mortgage.rate_concession_service.exception.NotFoundException;
 import com.mortgage.rate_concession_service.security.CurrentUser;
 import com.mortgage.rate_concession_service.service.PricingExceptionRequestService;
+import com.mortgage.rate_concession_service.service.ReasonFeedbackProvider;
 import com.mortgage.rate_concession_service.web.dto.CreateRequestDto;
 import com.mortgage.rate_concession_service.web.dto.DecisionRequestDto;
 import com.mortgage.rate_concession_service.web.dto.HistoryEventDto;
+import com.mortgage.rate_concession_service.web.dto.ReasonFeedbackRequestDto;
+import com.mortgage.rate_concession_service.web.dto.ReasonFeedbackResponseDto;
 import com.mortgage.rate_concession_service.web.dto.RequestResponseDto;
 import com.mortgage.rate_concession_service.web.dto.WithdrawRequestDto;
 import jakarta.validation.Valid;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -37,9 +42,13 @@ public class PricingExceptionRequestController {
     private static final int MAX_IDEMPOTENCY_KEY_LENGTH = 255;
 
     private final PricingExceptionRequestService service;
+    private final Optional<ReasonFeedbackProvider> reasonFeedbackProvider;
 
-    public PricingExceptionRequestController(PricingExceptionRequestService service) {
+    public PricingExceptionRequestController(
+            PricingExceptionRequestService service,
+            Optional<ReasonFeedbackProvider> reasonFeedbackProvider) {
         this.service = service;
+        this.reasonFeedbackProvider = reasonFeedbackProvider;
     }
 
     @PostMapping
@@ -109,6 +118,32 @@ public class PricingExceptionRequestController {
         String reason = dto == null ? null : dto.reason();
         PricingExceptionRequest updated = service.withdraw(id, reason, currentUser);
         return RequestResponseDto.from(updated);
+    }
+
+    /**
+     * Read-only, advisory feedback on a draft {@code reason} before it is submitted - see
+     * docs/AI_REQUEST_QUALITY_ASSISTANT.md. Never writes a {@link PricingExceptionRequest} or
+     * {@link RequestHistoryEvent}; the RM edits and submits the reason themselves via the normal
+     * {@code POST /api/requests}. Returns {@code 404} when
+     * {@code ai.reason-feedback.enabled=false} disables the feature entirely (no provider bean
+     * exists in that case).
+     */
+    @PostMapping("/reason-feedback")
+    public ReasonFeedbackResponseDto reasonFeedback(
+            @Valid @RequestBody ReasonFeedbackRequestDto dto,
+            @CurrentUser AppUser currentUser) {
+        requireRole(currentUser, UserRole.RELATIONSHIP_MANAGER, "request feedback on a draft reason");
+
+        ReasonFeedbackProvider provider = reasonFeedbackProvider.
+                orElseThrow(() -> new NotFoundException("The reason-feedback assistant is disabled"));
+
+        List<ReasonFeedbackProvider.FeedbackItem> feedback =
+                provider.feedback(new ReasonFeedbackProvider.ReasonDraft(
+                        dto.applicationId(),
+                        dto.requestedDiscountBps(),
+                        dto.reason()));
+
+        return new ReasonFeedbackResponseDto(feedback, "mock", "mock-v1");
     }
 
     private void requireRole(AppUser user, UserRole required, String action) {

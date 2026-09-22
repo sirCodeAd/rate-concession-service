@@ -1,8 +1,7 @@
 # Agentic development
 
 This solution was built end-to-end with an AI coding agent (GitHub Copilot CLI), using a
-spec-driven, plan-first workflow rather than open-ended "vibe coding." Summarised below so another
-engineer can judge how much confidence to place in this codebase.
+spec-driven development (SDD) approach rather than open-ended "vibe coding."
 
 ## 1. Plan before code
 
@@ -54,8 +53,7 @@ test suite, because each is an *absence* of a safeguard rather than a broken one
 
 Plan first, decompose into checkable units, never trust a self-report, treat human review as
 ongoing rather than a one-off gate — this is the same control philosophy proposed for a
-hypothetical in-product AI feature in [AI_REVIEWER_COPILOT.md](./AI_REVIEWER_COPILOT.md): AI
+hypothetical in-product AI feature in
+[AI_REQUEST_QUALITY_ASSISTANT.md](./AI_REQUEST_QUALITY_ASSISTANT.md): AI
 accelerates the work, but a human stays accountable, and every acceptance is backed by something
-checkable rather than the agent's own narrative. The limit is symmetrical: this only works as well
-as the review applied to it — a passing-tests claim is only meaningfully validated because a human
-actually re-ran them and exercised the running system, rather than taking it on faith.
+checkable rather than the agent's own narrative.

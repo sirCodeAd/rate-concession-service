@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
 
-/** Centralised mapping of domain/validation exceptions onto the consistent {@link ErrorResponse} shape. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -62,10 +61,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResourceFound(
             org.springframework.web.servlet.resource.NoResourceFoundException ex, HttpServletRequest request) {
-        // Thrown e.g. when a path variable segment is blank (a double slash collapses the route so
-        // it no longer matches any @RequestMapping and falls through to static-resource handling).
-        // This is a client routing mistake, not a server fault, so it must not fall into the
-        // generic 500 handler below.
         return build(HttpStatus.NOT_FOUND, "No matching endpoint for: " + request.getRequestURI(), request);
     }
 

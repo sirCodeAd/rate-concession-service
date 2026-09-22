@@ -8,14 +8,6 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 
-/**
- * Stores the outcome of a previously-processed {@code Idempotency-Key} for POST /api/requests, so
- * that retried creates return the original response instead of creating duplicate rows.
- *
- * <p>The key is scoped per caller: {@code (managerId, idempotencyKey)} is the primary key, so two
- * different relationship managers may reuse the same key value independently without colliding
- * or seeing each other's responses.
- */
 @Entity
 @Table(name = "idempotency_record")
 @IdClass(IdempotencyRecordId.class)

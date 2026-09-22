@@ -21,11 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Isolated in its own bean (rather than a method on {@link PricingExceptionRequestService}) so
- * that the {@code REQUIRES_NEW} propagation is honoured via the Spring AOP proxy - a
- * same-class self-invocation would silently bypass the transactional advice.
- */
 @Service
 public class IdempotentRequestCreator {
 

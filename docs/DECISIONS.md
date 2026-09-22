@@ -9,8 +9,7 @@ questions.
   `applicationId`, `requestedDiscountBps` and `reason` never change. `PENDING` can only transition
   to `APPROVED`, `DECLINED` (via a reviewer) or `WITHDRAWN` (via any RM); all three are terminal.
   If an RM wants different terms, they withdraw the pending request and create a new one. This
-  guarantees a reviewer's decision always applies to precisely the request they read — no risk of
-  a "bait and switch" between review and decision.
+  guarantees a reviewer's decision always applies to precisely the request they read.
 - **Who may withdraw a pending request:** any authenticated RM, not only its creator. This
   mirrors the reviewer side of the workflow, where any `REVIEWER` may decide on a request
   regardless of who it was assigned to — there is no concept of "my" review queue vs. "someone
